@@ -1,0 +1,34 @@
+#fps , #timer{
+  top: 0;
+}
+
+#gameCanvas {
+  position: absolute;
+  bottom: 2px;
+  background-color: white;
+
+
+}
+
+body {
+  background-color: white;
+}
+
+div.shownDebugFeatures > * {
+  z-index: 1000;
+  position: relative;
+  display: inline;
+  opacity: 50%;;
+  mix-blend-mode: difference;
+  filter: invert(100%)
+}
+
+
+div.hiddenDebugFeatures > * {
+  z-index: 1000;
+  position:absolute;
+  display: none;
+  /*color: rgba(100, 100, 100, 100.3);*/
+
+}
+
