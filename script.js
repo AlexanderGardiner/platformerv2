@@ -319,16 +319,16 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     }
     if (mainPlayer.dashing && mainPlayer.dashingTimer>0 && mainPlayer.dashCooldown<0) {
       if (slowMotion) {
-        mainPlayer.xVelocity = ((Math.abs(mainPlayer.xVelocity)/mainPlayer.xVelocity) * 1000) / 5;
+        mainPlayer.xVelocity = ((Math.abs(mainPlayer.xVelocity)/mainPlayer.xVelocity)*10) / ( deltaTime);
       } else {
-        mainPlayer.xVelocity = (Math.abs(mainPlayer.xVelocity)/mainPlayer.xVelocity) * 1000
+        mainPlayer.xVelocity = ((Math.abs(mainPlayer.xVelocity)/mainPlayer.xVelocity)*10)/deltaTime
       }
       
       if (mainPlayer.dashingTimer<0) {
         mainPlayer.xVelocity = 0;
       }
 
-       mainPlayer.dashingTimer -= deltaTime;
+       mainPlayer.dashingTimer -= 1/deltaTime;
       
         
       
