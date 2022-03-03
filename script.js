@@ -11,6 +11,8 @@ let debugOn = false;
 let blocks = [];
 let levelChanged = false;
 let performanceMode = false;
+let preLoadedLevels = [];
+let loadedLevels = 0;
 document.addEventListener("keydown", function(event) {
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
@@ -78,52 +80,34 @@ document.addEventListener("keydown", function(event) {
   }
   if (event.keyCode==49) {
     
-    let levelPath = "level1.json"
-    fetch(levelPath)
-      .then(response => response.json())
-      .then(res=> LoadLevel(res))
-
+    blocks = preLoadedLevels[0]
+    levelChanged = true
   }
   if (event.keyCode==50) {
-    
-    let levelPath = "level2.json"
-    fetch(levelPath)
-      .then(response => response.json())
-      .then(res=> LoadLevel(res))
+    blocks = preLoadedLevels[1]
+    levelChanged = true
 
   }
   if (event.keyCode==51) {
-    
-    let levelPath = "level3.json"
-    fetch(levelPath)
-      .then(response => response.json())
-      .then(res=> LoadLevel(res))
+    blocks = preLoadedLevels[2]
+    levelChanged = true
+
 
   }
   if (event.keyCode==52) {
-    
-    let levelPath = "level4.json"
-    fetch(levelPath)
-      .then(response => response.json())
-      .then(res=> LoadLevel(res))
-
+    blocks = preLoadedLevels[3]
+    levelChanged = true
   }
   
   if (event.keyCode==53) {
-    
-    let levelPath = "level5.json"
-    fetch(levelPath)
-      .then(response => response.json())
-      .then(res=> LoadLevel(res))
+    blocks = preLoadedLevels[4]
+    levelChanged = true
 
   }
 
   if (event.keyCode==54) {
-    
-    let levelPath = "level6.json"
-    fetch(levelPath)
-      .then(response => response.json())
-      .then(res=> LoadLevel(res))
+    blocks = preLoadedLevels[5]
+    levelChanged = true
 
   }
 });
@@ -200,7 +184,7 @@ class player {
     this.levelCompleted = false;
     this.started = false;
     this.dashing = false;
-    this.dashingTimer = 0;
+    this.dashingTimer = 1000;
     this.dashCooldown = 0;
     this.dashingDirection = 1;
     this.previousFPSTime = performance.now();
@@ -243,6 +227,58 @@ function ClearStage(gameCanvas, gameCTX) {
 
 }
 
+function PreLoadLevels() {
+  if (loadedLevels==0) {
+    let levelPath = "level1.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+    
+    
+  } else if (loadedLevels==1) {
+    levelPath = "level2.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  } else if (loadedLevels==2) {
+    levelPath = "level3.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  } else if (loadedLevels==3) {
+    levelPath = "level4.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  } else if (loadedLevels==4) {
+    levelPath = "level5.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  } else if (loadedLevels==5) {
+    levelPath = "level6.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+    blocks = preLoadedLevels[0];
+    Initialize();
+  }
+  
+  
+  
+  
+  
+  
+  
+}
+function PreLoadLevel(level) {
+  preLoadedLevels.push([]);
+  for (let i = 0; i < level.length; i++) {
+    preLoadedLevels[loadedLevels].push(new solidBlock(level[i]))
+  }
+  loadedLevels += 1;
+  PreLoadLevels();
+}
 function LoadLevel(level) {
   blocks = []
   for (let i = 0; i < level.length; i++) {
@@ -251,15 +287,12 @@ function LoadLevel(level) {
   levelChanged = true;
 }
 
-function Main() {
-  let levelPath = "level1.json"
-  fetch(levelPath)
-    .then(response => response.json())
-    .then(res=> Initialize(res))
+function Main(){
+  PreLoadLevels();
 }
 
-function Initialize(level) {
-  
+function Initialize() {
+
   
   let mainPlayer = new player(0,100,15,15,0,0,3,false);
   
@@ -280,12 +313,12 @@ function Initialize(level) {
   debugText.push(document.getElementById("dashCooldown"));
   debugText.push(document.getElementById("dashTimer"));
 
-  LoadLevel(level);
+  //LoadLevel(level);
   let coyoteTime = 0.02;
   
   let gravity = 0.3;
 
-
+  
   mainPlayer = Death(mainPlayer);
   DrawBlocks(blocks,gameCanvas,gameCTX);
   DrawPlayer(mainPlayer, gameCanvas, gameCTX);
@@ -350,20 +383,26 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
       } 
     }
     mainPlayer = HandleInput(mainPlayer, deltaTime, blocks, coyoteTime);
-    if (dashPressed) {
+    if (dashPressed && mainPlayer.dashCooldown<0) {
+      mainPlayer.dashCooldown = 5;
       mainPlayer.dashing = true;
+      
     }
     if (rightPressed) {
       mainPlayer.dashingDirection = 1;
     } else if (leftPressed) {
       mainPlayer.dashingDirection = 0;
     }
-    if (mainPlayer.dashing && mainPlayer.dashingTimer>0 && mainPlayer.dashCooldown<0) {
-
+    
+    if (mainPlayer.dashing && mainPlayer.dashingTimer>0) {
+      //dashing is broken in slow motion
       if (mainPlayer.dashingDirection==1) {
-        mainPlayer.xVelocity = ((10) / ( deltaTime));
+
+        mainPlayer.xVelocity = (700)
+
+        
       } else {
-        mainPlayer.xVelocity = -((10) / ( deltaTime));
+        mainPlayer.xVelocity = -(700) 
       }
         
       
@@ -372,19 +411,19 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
         mainPlayer.xVelocity = 0;
       }
 
-       mainPlayer.dashingTimer -= 1/deltaTime;
+       mainPlayer.dashingTimer -= 5000*(deltaTime);
       
         
+      mainPlayer.dashCooldown = 3;
       
-      mainPlayer.dashCooldown = 5;
     } else {
        
       mainPlayer.dashing = false;
-      mainPlayer.dashingTimer =1000;
+      mainPlayer.dashingTimer =220;
       mainPlayer.dashCooldown -= 10*deltaTime;
     }
     mainPlayer = UpdatePosition(mainPlayer, blocks, deltaTime);
-    
+
     DrawBlocks(blocks,gameCanvas,gameCTX);
     DrawPlayer(mainPlayer,gameCanvas,gameCTX);
 
@@ -411,7 +450,7 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
       
       debugText[8].innerHTML = "Coyote Time: " + coyoteTime;
       debugText[9].innerHTML = "Dash Cooldown: " + mainPlayer.dashCooldown;
-      debugText[10].innerHTML = "Dash Timer: "  + mainPlayer.dashingTimer;
+      debugText[10].innerHTML = "Dash Timer: "  + mainPlayer.dashingTimer + mainPlayer.dashing;
     }
   }
   previousTime = time;
