@@ -10,6 +10,7 @@ let paused = false;
 let debugOn = false;
 let blocks = [];
 let levelChanged = false;
+let performanceMode = false;
 document.addEventListener("keydown", function(event) {
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
@@ -27,7 +28,7 @@ document.addEventListener("keydown", function(event) {
     rightPressed = true;
   }
 
-  if (event.keyCode == 67) {
+  if (event.keyCode == 67 || event.keyCode == 74) {
     dashPressed = true;
   }
   if (event.keyCode ==86) {
@@ -54,6 +55,14 @@ document.addEventListener("keydown", function(event) {
       paused = false;
     } else {
       paused = true;
+    }
+    
+  }
+  if (event.keyCode==85) {
+    if (performanceMode) {
+      performanceMode = false;
+    } else {
+      performanceMode = true;
     }
     
   }
@@ -100,7 +109,23 @@ document.addEventListener("keydown", function(event) {
 
   }
   
+  if (event.keyCode==53) {
     
+    let levelPath = "level5.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> LoadLevel(res))
+
+  }
+
+  if (event.keyCode==54) {
+    
+    let levelPath = "level6.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> LoadLevel(res))
+
+  }
 });
 
 document.addEventListener("keyup", function(event) {
@@ -119,7 +144,7 @@ document.addEventListener("keyup", function(event) {
   if (event.keyCode == 68 || event.keyCode == 39) {
     rightPressed = false;
   }
-  if (event.keyCode == 67) {
+  if (event.keyCode == 67 || event.keyCode == 74) {
     dashPressed = false;
   }
   if (event.keyCode ==86) {
@@ -177,6 +202,9 @@ class player {
     this.dashing = false;
     this.dashingTimer = 0;
     this.dashCooldown = 0;
+    this.dashingDirection = 1;
+    this.previousFPSTime = performance.now();
+    this.FPSTime = this.previousFPSTime+2000;
   }
 }
 function DrawBlock(block, gameCanvas, gameCTX) {
@@ -202,7 +230,11 @@ function DrawBlocks(blocks,gameCanvas,gameCTX) {
 
 function DrawPlayer(player, gameCanvas, gameCTX) {
   gameCTX.fillStyle = "#9000FF";
-  gameCTX.fillRect(player.x,gameCanvas.height-player.height-player.y,player.width,player.height);
+  if (performanceMode)
+    gameCTX.fillRect(Math.round(player.x),gameCanvas.height-player.height-Math.round(player.y),player.width,player.height);
+  else {
+    gameCTX.fillRect(player.x,gameCanvas.height-player.height-player.y,player.width,player.height);
+  }
   gameCTX.fillStyle = "#000000";
 }
 
@@ -234,7 +266,7 @@ function Initialize(level) {
   let gameCanvas = document.getElementById("gameCanvas");
   let gameCTX = gameCanvas.getContext("2d");
   let debugText = [];
-
+  gameCTX.imageSmoothingEnabled = false;
 
   debugText.push(document.getElementById("fps"));
   debugText.push(document.getElementById("timer"));
@@ -264,12 +296,16 @@ function Initialize(level) {
 }
 
 function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugText, coyoteTime) {
-
+  ClearStage(gameCanvas, gameCTX);
+  gameCTX.imageSmoothingEnabled = false;
+  mainPlayer.FPSTime = performance.now();
+  
   if (levelChanged) {
     mainPlayer = Restart(mainPlayer);
     levelChanged = false;
   }
 
+  
   let time = performance.now();
   let deltaTime = 0;
   if (slowMotion) {
@@ -288,7 +324,7 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     if (!mainPlayer.levelCompleted && mainPlayer.started) {
       mainPlayer.timer += deltaTime; 
     }
-    ClearStage(gameCanvas, gameCTX);
+    
   
   
     if (mainPlayer.jumping || mainPlayer.yVelocity<0) {
@@ -317,12 +353,20 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     if (dashPressed) {
       mainPlayer.dashing = true;
     }
+    if (rightPressed) {
+      mainPlayer.dashingDirection = 1;
+    } else if (leftPressed) {
+      mainPlayer.dashingDirection = 0;
+    }
     if (mainPlayer.dashing && mainPlayer.dashingTimer>0 && mainPlayer.dashCooldown<0) {
-      if (slowMotion) {
-        mainPlayer.xVelocity = ((Math.abs(mainPlayer.xVelocity)/mainPlayer.xVelocity)*10) / ( deltaTime);
+
+      if (mainPlayer.dashingDirection==1) {
+        mainPlayer.xVelocity = ((10) / ( deltaTime));
       } else {
-        mainPlayer.xVelocity = ((Math.abs(mainPlayer.xVelocity)/mainPlayer.xVelocity)*10)/deltaTime
+        mainPlayer.xVelocity = -((10) / ( deltaTime));
       }
+        
+      
       
       if (mainPlayer.dashingTimer<0) {
         mainPlayer.xVelocity = 0;
@@ -343,9 +387,18 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     
     DrawBlocks(blocks,gameCanvas,gameCTX);
     DrawPlayer(mainPlayer,gameCanvas,gameCTX);
+
+    if (mainPlayer.FPSTime>=mainPlayer.previousFPSTime+100) {
+      mainPlayer.previousFPSTime = mainPlayer.FPSTime;
+      
+      if (slowMotion) {
+        debugText[0].innerHTML = "FPS: " + (1/deltaTime/5).toFixed(5);
+      } else {
+        debugText[0].innerHTML = "FPS: " + (1/deltaTime).toFixed(5);
+      }
+    }
     
-  
-    debugText[0].innerHTML = "FPS: " + (1/deltaTime).toFixed(5);
+    
     debugText[1].innerHTML = "Timer: " + mainPlayer.timer
   
     if (debugOn) {
@@ -430,6 +483,7 @@ function UpdatePosition(mainPlayer, blocks, deltaTime) {
 }
 
 function CollisionDetection(blocks, mainPlayer) {
+  
   mainPlayer.collisionRightObjects = [];
   mainPlayer.collisionLeftObjects = [];
   mainPlayer.collisionBottomObjects = [];
@@ -447,7 +501,7 @@ function CollisionDetection(blocks, mainPlayer) {
       mainPlayer.collisionTopObjects.push(blocks[i]);
     }
 
-    if (mainPlayer.y <= blocks[i].y + blocks[i].height && mainPlayer.y >= blocks[i].y + (blocks[i].height-5) && mainPlayer.x + mainPlayer.width >= blocks[i].x+1 && mainPlayer.x <= blocks[i].x + blocks[i].width-1) {
+    if (mainPlayer.y <= blocks[i].y + blocks[i].height && mainPlayer.y >= blocks[i].y + (blocks[i].height-5) && mainPlayer.x + mainPlayer.width >= blocks[i].x+2 && mainPlayer.x <= blocks[i].x + blocks[i].width-2) {
       mainPlayer.collisionBottomObjects.push(blocks[i]);
 
     }
@@ -458,6 +512,7 @@ function CollisionDetection(blocks, mainPlayer) {
 }
 
 function HandleCollision(mainPlayer) {
+  let collidedWithBounce = false;
   for (let i = 0; i < mainPlayer.collisionRightObjects.length; i++) {
     if (mainPlayer.collisionRightObjects[i].type==1) {
       if (mainPlayer.collisionRightObjects.length != 0) {
@@ -473,10 +528,11 @@ function HandleCollision(mainPlayer) {
       mainPlayer.spawnY = mainPlayer.collisionRightObjects[i].y;
     } else if (mainPlayer.collisionRightObjects[i].type==4) {
       mainPlayer.levelCompleted = true;
-    } else if (mainPlayer.collisionRightObjects[i].type==5) {
-      mainPlayer.y+=5;
+    } else if (mainPlayer.collisionRightObjects[i].type==5 && !collidedWithBounce) {
+      collidedWithBounce = true;
+      mainPlayer.y+=10;
       if (mainPlayer.yVelocity<300) {
-        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-5;
+        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-1;
       } else {
         mainPlayer.yVelocity = 300;
       }
@@ -498,10 +554,11 @@ function HandleCollision(mainPlayer) {
       mainPlayer.spawnY = mainPlayer.collisionLeftObjects[i].y;
     } else if (mainPlayer.collisionLeftObjects[i].type==4) {
       mainPlayer.levelCompleted = true;
-    } else if (mainPlayer.collisionLeftObjects[i].type==5) {
-      mainPlayer.y+=5;
+    } else if (mainPlayer.collisionLeftObjects[i].type==5 && !collidedWithBounce) {
+      collidedWithBounce = true;
+      mainPlayer.y+=10;
       if (mainPlayer.yVelocity<300) {
-        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-5;
+        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-1;
       } else {
         mainPlayer.yVelocity = 300;
       }
@@ -523,10 +580,11 @@ function HandleCollision(mainPlayer) {
       mainPlayer.spawnY = mainPlayer.collisionBottomObjects[i].y;
     } else if (mainPlayer.collisionBottomObjects[i].type==4) {
       mainPlayer.levelCompleted = true;
-    } else if (mainPlayer.collisionBottomObjects[i].type==5) {
-      mainPlayer.y+=5;
+    } else if (mainPlayer.collisionBottomObjects[i].type==5 && !collidedWithBounce) {
+      collidedWithBounce = true;
+      mainPlayer.y+=10;
       if (mainPlayer.yVelocity<300) {
-        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-5;
+        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-1;
       } else {
         mainPlayer.yVelocity = 300;
       }
@@ -547,10 +605,11 @@ function HandleCollision(mainPlayer) {
       mainPlayer.spawnY = mainPlayer.collisionTopObjects[i].y;
     } else if (mainPlayer.collisionTopObjects[i].type==4) {
       mainPlayer.levelCompleted = true;
-    } else if (mainPlayer.collisionTopObjects[i].type==5) {
-      mainPlayer.y+=5;
+    } else if (mainPlayer.collisionTopObjects[i].type==5 && !collidedWithBounce) {
+      collidedWithBounce = true;
+      mainPlayer.y+=10;
       if (mainPlayer.yVelocity<300) {
-        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-5;
+        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-1;
       } else {
         mainPlayer.yVelocity = 300;
       }
@@ -587,9 +646,9 @@ function HandleInput(mainPlayer, deltaTime, blocks, coyoteTime) {
     mainPlayer.xVelocity = 0;
   }
 
-  if (upPressed && coyoteTime>0 && !mainPlayer.jumping) {
+  if (upPressed && coyoteTime>0 && !mainPlayer.jumping && mainPlayer.yVelocity<=0) {
     mainPlayer.jumping = true;
-    mainPlayer.yVelocity = 300;
+    mainPlayer.yVelocity = 290;
     mainPlayer = CollisionDetection(blocks, mainPlayer);
     mainPlayer = HandleCollision(mainPlayer);
     
