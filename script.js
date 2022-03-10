@@ -13,6 +13,9 @@ let levelChanged = false;
 let performanceMode = false;
 let preLoadedLevels = [];
 let loadedLevels = 0;
+let canvasRefresh = true;
+let invisibleMode = false;
+let invisibleModeJustPressed = false;
 document.addEventListener("keydown", function(event) {
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
@@ -36,7 +39,23 @@ document.addEventListener("keydown", function(event) {
   if (event.keyCode ==86) {
     deathPressed = true;
   }
-
+  if (event.keyCode ==78) {
+    invisibleModeJustPressed = true;
+    if (invisibleMode) {
+      invisibleMode = false;
+    } else {
+      invisibleMode = true;
+    }
+    
+  }
+  if (event.keyCode ==89) {
+    if (canvasRefresh) {
+      canvasRefresh = false;
+    } else {
+      canvasRefresh = true;
+    }
+    
+  }
   if (event.keyCode ==82) {
     restartPressed = true;
   }
@@ -78,38 +97,53 @@ document.addEventListener("keydown", function(event) {
     }
     
   }
-  if (event.keyCode==49) {
+  if (loadedLevels>7) {
+    if (event.keyCode==49) {
     
-    blocks = preLoadedLevels[0]
-    levelChanged = true
-  }
-  if (event.keyCode==50) {
-    blocks = preLoadedLevels[1]
-    levelChanged = true
+      blocks = preLoadedLevels[0]
+      levelChanged = true
+    }
+    if (event.keyCode==50) {
+      blocks = preLoadedLevels[1]
+      levelChanged = true
+  
+    }
+    if (event.keyCode==51) {
+      blocks = preLoadedLevels[2]
+      levelChanged = true
+  
+  
+    }
+    if (event.keyCode==52) {
+      blocks = preLoadedLevels[3]
+      levelChanged = true
+    }
+    
+    if (event.keyCode==53) {
+      blocks = preLoadedLevels[4]
+      levelChanged = true
+  
+    }
+  
+    if (event.keyCode==54) {
+      blocks = preLoadedLevels[5]
+      levelChanged = true
+  
+    }
 
-  }
-  if (event.keyCode==51) {
-    blocks = preLoadedLevels[2]
-    levelChanged = true
+    if (event.keyCode==55) {
+      blocks = preLoadedLevels[6]
+      levelChanged = true
+  
+    }
 
-
-  }
-  if (event.keyCode==52) {
-    blocks = preLoadedLevels[3]
-    levelChanged = true
+    if (event.keyCode==56) {
+      blocks = preLoadedLevels[7]
+      levelChanged = true
+  
+    }
   }
   
-  if (event.keyCode==53) {
-    blocks = preLoadedLevels[4]
-    levelChanged = true
-
-  }
-
-  if (event.keyCode==54) {
-    blocks = preLoadedLevels[5]
-    levelChanged = true
-
-  }
 });
 
 document.addEventListener("keyup", function(event) {
@@ -189,6 +223,7 @@ class player {
     this.dashingDirection = 1;
     this.previousFPSTime = performance.now();
     this.FPSTime = this.previousFPSTime+2000;
+    this.deaths = 0;
   }
 }
 function DrawBlock(block, gameCanvas, gameCTX) {
@@ -208,12 +243,52 @@ function DrawBlock(block, gameCanvas, gameCTX) {
 
 function DrawBlocks(blocks,gameCanvas,gameCTX) {
   for (let i = 0; i < blocks.length; i++) {
-    DrawBlock(blocks[i],gameCanvas,gameCTX);
+    if ((blocks[i].type==3 || blocks[i].type==4)&& invisibleMode) {
+      DrawBlock(blocks[i],gameCanvas,gameCTX);
+    } else if (!invisibleMode) {
+      DrawBlock(blocks[i],gameCanvas,gameCTX);
+    }
+    
   }
 }
-
+var r = 256;
+var ri = 1;
+var g = 100;
+var gi =2;
+var b = 256;
+var bi=1;
 function DrawPlayer(player, gameCanvas, gameCTX) {
-  gameCTX.fillStyle = "#9000FF";
+  if (player.dashCooldown<0) {
+    if (!canvasRefresh) {
+      if (r==256) {
+        ri=-1;
+      }
+      if (g==256) {
+        gi=-2;
+      }
+      if (b==256) {
+        bi=-1;
+      }
+      if (r==100) {
+        ri=1;
+      }
+      if (g==100) {
+        gi=2;
+      }
+      if (b==0) {
+        bi=1;
+      }
+      gameCTX.fillStyle = "rgba("+r+", "+g+", "+b+")";
+      r+=ri;
+      g+=gi;
+      b+=bi;
+    } else {
+      gameCTX.fillStyle = "#9000FF";
+    }
+  } else {
+    gameCTX.fillStyle = "#5000FF";
+  }
+  
   if (performanceMode)
     gameCTX.fillRect(Math.round(player.x),gameCanvas.height-player.height-Math.round(player.y),player.width,player.height);
   else {
@@ -229,42 +304,51 @@ function ClearStage(gameCanvas, gameCTX) {
 
 function PreLoadLevels() {
   if (loadedLevels==0) {
-    let levelPath = "level1.json"
+    let levelPath = "level3.json"
     fetch(levelPath)
       .then(response => response.json())
       .then(res=> PreLoadLevel(res))
     
     
   } else if (loadedLevels==1) {
-    levelPath = "level2.json"
+    levelPath = "level8.json"
     fetch(levelPath)
       .then(response => response.json())
       .then(res=> PreLoadLevel(res))
   } else if (loadedLevels==2) {
-    levelPath = "level3.json"
-    fetch(levelPath)
-      .then(response => response.json())
-      .then(res=> PreLoadLevel(res))
-  } else if (loadedLevels==3) {
-    levelPath = "level4.json"
-    fetch(levelPath)
-      .then(response => response.json())
-      .then(res=> PreLoadLevel(res))
-  } else if (loadedLevels==4) {
-    levelPath = "level5.json"
-    fetch(levelPath)
-      .then(response => response.json())
-      .then(res=> PreLoadLevel(res))
-  } else if (loadedLevels==5) {
     levelPath = "level6.json"
     fetch(levelPath)
       .then(response => response.json())
       .then(res=> PreLoadLevel(res))
-    blocks = preLoadedLevels[0];
-    Initialize();
+  } else if (loadedLevels==3) {
+    levelPath = "level1.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  } else if (loadedLevels==4) {
+    levelPath = "level4.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  } else if (loadedLevels==5) {
+    levelPath = "level7.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+    
+  } else if (loadedLevels==6) {
+    levelPath = "level2.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  
+  } else if (loadedLevels==7) {
+    levelPath = "level5.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  
   }
-  
-  
   
   
   
@@ -276,8 +360,13 @@ function PreLoadLevel(level) {
   for (let i = 0; i < level.length; i++) {
     preLoadedLevels[loadedLevels].push(new solidBlock(level[i]))
   }
+  if (loadedLevels==0) {
+    blocks = preLoadedLevels[0];
+    Initialize();
+  }
   loadedLevels += 1;
   PreLoadLevels();
+  
 }
 function LoadLevel(level) {
   blocks = []
@@ -288,6 +377,7 @@ function LoadLevel(level) {
 }
 
 function Main(){
+
   PreLoadLevels();
 }
 
@@ -298,6 +388,7 @@ function Initialize() {
   
   let gameCanvas = document.getElementById("gameCanvas");
   let gameCTX = gameCanvas.getContext("2d");
+  
   let debugText = [];
   gameCTX.imageSmoothingEnabled = false;
 
@@ -312,6 +403,8 @@ function Initialize() {
   debugText.push(document.getElementById("coyoteTime"));
   debugText.push(document.getElementById("dashCooldown"));
   debugText.push(document.getElementById("dashTimer"));
+  debugText.push(document.getElementById("deltaTime"));
+  debugText.push(document.getElementById("deaths"));
 
   //LoadLevel(level);
   let coyoteTime = 0.02;
@@ -329,12 +422,20 @@ function Initialize() {
 }
 
 function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugText, coyoteTime) {
-  ClearStage(gameCanvas, gameCTX);
+  if (canvasRefresh) {
+    ClearStage(gameCanvas, gameCTX);
+  }
+  if (invisibleModeJustPressed) {
+    ClearStage(gameCanvas, gameCTX);
+    invisibleModeJustPressed=false;
+  }
   gameCTX.imageSmoothingEnabled = false;
   mainPlayer.FPSTime = performance.now();
   
   if (levelChanged) {
+    
     mainPlayer = Restart(mainPlayer);
+    mainPlayer.deaths = 0;
     levelChanged = false;
   }
 
@@ -358,7 +459,7 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
       mainPlayer.timer += deltaTime; 
     }
     
-  
+
   
     if (mainPlayer.jumping || mainPlayer.yVelocity<0) {
       coyoteTime-=0.1 * deltaTime;
@@ -374,8 +475,7 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     
     mainPlayer = DetectFloorDeath(mainPlayer);
     mainPlayer = Gravity(mainPlayer,deltaTime, blocks);
-    //mainPlayer = CollisionDetection(blocks, mainPlayer);
-    //mainPlayer = HandleCollision(mainPlayer);
+
     for (let i = 0; i < mainPlayer.collisionBottomObjects.length; i++) {
       if (mainPlayer.collisionBottomObjects[i].type==1) {
         mainPlayer.jumping = false;
@@ -395,23 +495,23 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     }
     
     if (mainPlayer.dashing && mainPlayer.dashingTimer>0) {
-      //dashing is broken in slow motion
-      if (mainPlayer.dashingDirection==1) {
 
-        mainPlayer.xVelocity = (700)
+      if (mainPlayer.dashingDirection==1) {
+        
+        mainPlayer.xVelocity = 600
 
         
       } else {
-        mainPlayer.xVelocity = -(700) 
+        mainPlayer.xVelocity = -600
       }
         
       
-      
+      mainPlayer.dashingTimer -= 200*(deltaTime);
       if (mainPlayer.dashingTimer<0) {
         mainPlayer.xVelocity = 0;
       }
 
-       mainPlayer.dashingTimer -= 5000*(deltaTime);
+       
       
         
       mainPlayer.dashCooldown = 3;
@@ -419,12 +519,14 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     } else {
        
       mainPlayer.dashing = false;
-      mainPlayer.dashingTimer =220;
+      mainPlayer.dashingTimer =20;
       mainPlayer.dashCooldown -= 10*deltaTime;
     }
     mainPlayer = UpdatePosition(mainPlayer, blocks, deltaTime);
-
+    
     DrawBlocks(blocks,gameCanvas,gameCTX);
+    
+    
     DrawPlayer(mainPlayer,gameCanvas,gameCTX);
 
     if (mainPlayer.FPSTime>=mainPlayer.previousFPSTime+100) {
@@ -438,8 +540,8 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     }
     
     
-    debugText[1].innerHTML = "Timer: " + mainPlayer.timer
-  
+    debugText[1].innerHTML = "Timer: " + mainPlayer.timer.toFixed(2)
+    debugText[12].innerHTML = "Deaths: " + mainPlayer.deaths
     if (debugOn) {
       debugText[2].innerHTML = "X: " + mainPlayer.x.toFixed(5) + " Y: " +mainPlayer.y.toFixed(5);
       debugText[3].innerHTML = "X velocity: " + mainPlayer.xVelocity.toFixed(5) + " Y velocity: " + mainPlayer.yVelocity.toFixed(5);
@@ -451,7 +553,12 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
       debugText[8].innerHTML = "Coyote Time: " + coyoteTime;
       debugText[9].innerHTML = "Dash Cooldown: " + mainPlayer.dashCooldown;
       debugText[10].innerHTML = "Dash Timer: "  + mainPlayer.dashingTimer + mainPlayer.dashing;
+
+      debugText[11].innerHTML = "DeltaTime: "  + deltaTime
     }
+  } else {
+    DrawBlocks(blocks,gameCanvas,gameCTX);
+    DrawPlayer(mainPlayer,gameCanvas,gameCTX);
   }
   previousTime = time;
   requestAnimationFrame(function() {
@@ -459,6 +566,7 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
   });
   
 }
+
 
 function UpdatePosition(mainPlayer, blocks, deltaTime) {
   //mainPlayer.x+=mainPlayer.xVelocity
@@ -540,7 +648,7 @@ function CollisionDetection(blocks, mainPlayer) {
       mainPlayer.collisionTopObjects.push(blocks[i]);
     }
 
-    if (mainPlayer.y <= blocks[i].y + blocks[i].height && mainPlayer.y >= blocks[i].y + (blocks[i].height-5) && mainPlayer.x + mainPlayer.width >= blocks[i].x+2 && mainPlayer.x <= blocks[i].x + blocks[i].width-2) {
+    if (mainPlayer.y <= blocks[i].y + blocks[i].height && mainPlayer.y >= blocks[i].y + (blocks[i].height-5) && mainPlayer.x + mainPlayer.width >= blocks[i].x+1 && mainPlayer.x <= blocks[i].x + blocks[i].width-1) {
       mainPlayer.collisionBottomObjects.push(blocks[i]);
 
     }
@@ -569,9 +677,9 @@ function HandleCollision(mainPlayer) {
       mainPlayer.levelCompleted = true;
     } else if (mainPlayer.collisionRightObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
-      mainPlayer.y+=10;
-      if (mainPlayer.yVelocity<300) {
-        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-1;
+      mainPlayer.y+=3;
+      if (mainPlayer.yVelocity<-300) {
+        mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
         mainPlayer.yVelocity = 300;
       }
@@ -595,9 +703,9 @@ function HandleCollision(mainPlayer) {
       mainPlayer.levelCompleted = true;
     } else if (mainPlayer.collisionLeftObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
-      mainPlayer.y+=10;
-      if (mainPlayer.yVelocity<300) {
-        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-1;
+      mainPlayer.y+=3;
+      if (mainPlayer.yVelocity<-300) {
+        mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
         mainPlayer.yVelocity = 300;
       }
@@ -621,9 +729,9 @@ function HandleCollision(mainPlayer) {
       mainPlayer.levelCompleted = true;
     } else if (mainPlayer.collisionBottomObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
-      mainPlayer.y+=10;
-      if (mainPlayer.yVelocity<300) {
-        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-1;
+      mainPlayer.y+=3;
+      if (mainPlayer.yVelocity<-300) {
+        mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
         mainPlayer.yVelocity = 300;
       }
@@ -646,9 +754,9 @@ function HandleCollision(mainPlayer) {
       mainPlayer.levelCompleted = true;
     } else if (mainPlayer.collisionTopObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
-      mainPlayer.y+=10;
-      if (mainPlayer.yVelocity<300) {
-        mainPlayer.yVelocity = mainPlayer.yVelocity*-1-1;
+      mainPlayer.y+=3;
+      if (mainPlayer.yVelocity<-300) {
+        mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
         mainPlayer.yVelocity = 300;
       }
@@ -713,7 +821,12 @@ function Death(mainPlayer) {
     
     mainPlayer.timer = 0;
     mainPlayer.started = false;
+  } else {
+    mainPlayer.deaths+=1;
   }
+  mainPlayer.dashing = false;
+  mainPlayer.dashCooldown = 0;
+  mainPlayer.dashingTimer = 1000;
   mainPlayer.xVelocity = 0;
   mainPlayer.yVelocity = 0;
   mainPlayer.x = mainPlayer.spawnX;
@@ -723,7 +836,11 @@ function Death(mainPlayer) {
 }
 
 function Restart(mainPlayer) {
+  mainPlayer.deaths=0;
   document.getElementById("timer").style.color="black";
+  mainPlayer.dashing = false;
+  mainPlayer.dashCooldown = 0;
+  mainPlayer.dashingTimer = 1000;
   mainPlayer.spawnX = 20;
   mainPlayer.spawnY = 40;
   mainPlayer.levelCompleted = false;
