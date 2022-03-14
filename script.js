@@ -97,7 +97,7 @@ document.addEventListener("keydown", function(event) {
     }
     
   }
-  if (loadedLevels>7) {
+  if (loadedLevels>9) {
     if (event.keyCode==49) {
     
       blocks = preLoadedLevels[0]
@@ -139,6 +139,15 @@ document.addEventListener("keydown", function(event) {
 
     if (event.keyCode==56) {
       blocks = preLoadedLevels[7]
+      levelChanged = true
+  
+    }
+    if (event.keyCode==57) {
+      blocks = preLoadedLevels[8]
+      levelChanged = true
+  
+    } if (event.keyCode==48) {
+      blocks = preLoadedLevels[9]
       levelChanged = true
   
     }
@@ -344,6 +353,18 @@ function PreLoadLevels() {
   
   } else if (loadedLevels==7) {
     levelPath = "level5.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  
+  }else if (loadedLevels==8) {
+    levelPath = "level9.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  
+  } else if (loadedLevels==9) {
+    levelPath = "level10.json"
     fetch(levelPath)
       .then(response => response.json())
       .then(res=> PreLoadLevel(res))
