@@ -17,6 +17,7 @@ let canvasRefresh = true;
 let invisibleMode = false;
 let invisibleModeJustPressed = false;
 let levelSubmit = false;
+let currentLevelID=0;
 document.addEventListener("keydown", function(event) {
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
@@ -100,59 +101,69 @@ document.addEventListener("keydown", function(event) {
   }
   if (loadedLevels>10) {
     if (event.keyCode==49) {
-    
-      blocks = preLoadedLevels[0]
+      currentLevelID = preLoadedLevels[0][0];
+      blocks = preLoadedLevels[0].slice(1,)
       levelChanged = true
     }
     if (event.keyCode==50) {
-      blocks = preLoadedLevels[1]
+      currentLevelID = preLoadedLevels[1][0];
+      blocks = preLoadedLevels[1].slice(1,)
       levelChanged = true
   
     }
     if (event.keyCode==51) {
-      blocks = preLoadedLevels[2]
+      currentLevelID = preLoadedLevels[2][0];
+      blocks = preLoadedLevels[2].slice(1,)
       levelChanged = true
   
   
     }
     if (event.keyCode==52) {
-      blocks = preLoadedLevels[3]
+      currentLevelID = preLoadedLevels[3][0];
+      blocks = preLoadedLevels[3].slice(1,)
       levelChanged = true
     }
     
     if (event.keyCode==53) {
-      blocks = preLoadedLevels[4]
+      currentLevelID = preLoadedLevels[4][0];
+      blocks = preLoadedLevels[4].slice(1,)
       levelChanged = true
   
     }
   
     if (event.keyCode==54) {
-      blocks = preLoadedLevels[5]
+      currentLevelID = preLoadedLevels[5][0];
+      blocks = preLoadedLevels[5].slice(1,)
       levelChanged = true
   
     }
 
     if (event.keyCode==55) {
-      blocks = preLoadedLevels[6]
+      currentLevelID = preLoadedLevels[6][0];
+      blocks = preLoadedLevels[6].slice(1,)
       levelChanged = true
   
     }
 
     if (event.keyCode==56) {
-      blocks = preLoadedLevels[7]
+      currentLevelID = preLoadedLevels[7][0];
+      blocks = preLoadedLevels[7].slice(1,)
       levelChanged = true
   
     }
     if (event.keyCode==57) {
-      blocks = preLoadedLevels[8]
+      currentLevelID = preLoadedLevels[8][0];
+      blocks = preLoadedLevels[8].slice(1,)
       levelChanged = true
   
     } if (event.keyCode==48) {
-      blocks = preLoadedLevels[9]
+      currentLevelID = preLoadedLevels[9][0];
+      blocks = preLoadedLevels[9].slice(1,)
       levelChanged = true
   
     } if (event.keyCode==189) {
-      blocks = preLoadedLevels[10]
+      currentLevelID = preLoadedLevels[10][0];
+      blocks = preLoadedLevels[10].slice(1,)
       levelChanged = true
   
     }
@@ -245,6 +256,7 @@ class player {
     this.FPSTime = this.previousFPSTime+2000;
     this.deaths = 0;
     this.levelJustCompleted=false;
+    
   }
 }
 function DrawBlock(block, gameCanvas, gameCTX) {
@@ -396,7 +408,9 @@ function PreLoadLevels() {
 }
 function PreLoadLevel(level) {
   preLoadedLevels.push([]);
-  for (let i = 0; i < level.length; i++) {
+
+  preLoadedLevels[loadedLevels].push(level[0]);
+  for (let i = 1; i < level.length; i++) {
     preLoadedLevels[loadedLevels].push(new solidBlock(level[i]))
   }
   if (loadedLevels==0) {
