@@ -17,8 +17,11 @@ let canvasRefresh = true;
 let invisibleMode = false;
 let invisibleModeJustPressed = false;
 let levelSubmit = false;
-let currentLevelID=0;
+let currentLevelID=1;
 let timeSubmitted = false;
+let levelStarted = false;
+let invisibleRun = false;
+let slowRun = false;
 document.addEventListener("keydown", function(event) {
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
@@ -45,9 +48,14 @@ document.addEventListener("keydown", function(event) {
   if (event.keyCode ==78) {
     invisibleModeJustPressed = true;
     if (invisibleMode) {
+      invisibleRun=false;
       invisibleMode = false;
     } else {
       invisibleMode = true;
+      if (!levelStarted) {
+        invisibleRun=true;
+      }
+      
     }
     
   }
@@ -71,6 +79,7 @@ document.addEventListener("keydown", function(event) {
       slowMotion = false;
     } else {
       slowMotion = true;
+      slowRun=true;
     }
     
   }
@@ -102,6 +111,7 @@ document.addEventListener("keydown", function(event) {
   }
   if (loadedLevels>10) {
     if (event.keyCode==49) {
+      
       currentLevelID = preLoadedLevels[0][0];
       blocks = preLoadedLevels[0].slice(1,)
       levelChanged = true
@@ -204,7 +214,9 @@ document.addEventListener("keyup", function(event) {
   if (event.keyCode ==82) {
     restartPressed = false;
   }
-
+  if (event.keyCode==186) {
+    levelSubmit=false;
+  }
 
 });
 
@@ -248,7 +260,7 @@ class player {
     this.collisionRightObjects = [];
     this.timer = 0;
     this.levelCompleted = false;
-    this.started = false;
+
     this.dashing = false;
     this.dashingTimer = 1000;
     this.dashCooldown = 0;
@@ -490,7 +502,7 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
   mainPlayer.FPSTime = performance.now();
   
   if (levelChanged) {
-    
+    timeSubmitted = false;
     mainPlayer = Restart(mainPlayer);
     mainPlayer.deaths = 0;
     levelChanged = false;
@@ -508,11 +520,11 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
   if (!paused) {
     
     
-    if (!mainPlayer.started && (mainPlayer.xVelocity!=0 || mainPlayer.yVelocity!=0)) {
-      mainPlayer.started=true;
+    if (!levelStarted && (mainPlayer.xVelocity!=0 || mainPlayer.yVelocity!=0)) {
+      levelStarted=true;
     }
   
-    if (!mainPlayer.levelCompleted && mainPlayer.started) {
+    if (!mainPlayer.levelCompleted && levelStarted) {
       mainPlayer.timer += deltaTime; 
     }
     
@@ -838,10 +850,25 @@ function LevelCompleted(mainPlayer) {
 }
 
 function SubmitTime(mainPlayer) {
+  levelSubmit=false;
+  let modifiers = 0;
+  if (invisibleRun) {
+    modifiers=1;
+  }
+  if (slowRun) {
+    modifiers=2;
+  }
+  if (slowRun && invisibleRun){
+    modifiers=3;
+  }
   if (!timeSubmitted) {
     timeSubmitted = true;
     let name = prompt("Input name")
-    SendSpeedrunTime(name,currentLevelID,mainPlayer.timer*1000,2)
+    if (name!=null) {
+      SendSpeedrunTime(name,currentLevelID,mainPlayer.timer*1000,modifiers)
+    } else {
+      timeSubmitted=false;
+    }
   }
   
 }
@@ -895,12 +922,15 @@ function Death(mainPlayer) {
   if (mainPlayer.spawnX == 20 && mainPlayer.spawnY == 40) {
     if (slowMotion) {
       document.getElementById("timer").style.color="red";
+      slowRun=true;
     } else {
       document.getElementById("timer").style.color="black";
+      slowRun=false;
     }
+
     
     mainPlayer.timer = 0;
-    mainPlayer.started = false;
+    levelStarted = false;
   } else {
     mainPlayer.deaths+=1;
   }
@@ -917,6 +947,7 @@ function Death(mainPlayer) {
 
 function Restart(mainPlayer) {
   mainPlayer.deaths=0;
+  
   document.getElementById("timer").style.color="black";
   mainPlayer.dashing = false;
   mainPlayer.dashCooldown = 0;
@@ -929,13 +960,12 @@ function Restart(mainPlayer) {
 }
 
 function SendSpeedrunTime(name,level,time,modifiers) {
-  
 
-  const form = document.createElement('form');
-  form.target ="_blank"
-  form.method = "post";
-  form.action = "http://leaderboard.draqonboy.com/uploadrun.php";
-  document.body.appendChild(form);
+  const submitform = document.createElement('form');
+  submitform.target ="_blank"
+  submitform.method = "post";
+  submitform.action = "http://leaderboard.draqonboy.com/uploadrun.php";
+  document.body.appendChild(submitform);
 
   
   const formField = document.createElement('input');
@@ -944,8 +974,12 @@ function SendSpeedrunTime(name,level,time,modifiers) {
   formField.value ='{"name":"'+String(name)+'","level":'+String(level)+',"time":'+String(time)+',"modifiers":'+String(modifiers)+',"secret":"BCEq7@48*Vsi#wgw"}';
   alert(formField.value)
   formField.onclick="https://platformerv2.alexgardiner.repl.co"
-  form.appendChild(formField);
-  form.submit();
+  submitform.appendChild(formField);
+
+  submitform.submit();
+
+
+
   
 }
 
