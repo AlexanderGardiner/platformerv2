@@ -16,6 +16,7 @@ let loadedLevels = 0;
 let canvasRefresh = true;
 let invisibleMode = false;
 let invisibleModeJustPressed = false;
+let levelSubmit = false;
 document.addEventListener("keydown", function(event) {
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
@@ -97,7 +98,7 @@ document.addEventListener("keydown", function(event) {
     }
     
   }
-  if (loadedLevels>9) {
+  if (loadedLevels>10) {
     if (event.keyCode==49) {
     
       blocks = preLoadedLevels[0]
@@ -149,6 +150,16 @@ document.addEventListener("keydown", function(event) {
     } if (event.keyCode==48) {
       blocks = preLoadedLevels[9]
       levelChanged = true
+  
+    } if (event.keyCode==189) {
+      blocks = preLoadedLevels[10]
+      levelChanged = true
+  
+    }
+
+    if (event.keyCode==186) {
+      levelSubmit = true;
+    
   
     }
   }
@@ -233,6 +244,7 @@ class player {
     this.previousFPSTime = performance.now();
     this.FPSTime = this.previousFPSTime+2000;
     this.deaths = 0;
+    this.levelJustCompleted=false;
   }
 }
 function DrawBlock(block, gameCanvas, gameCTX) {
@@ -369,6 +381,12 @@ function PreLoadLevels() {
       .then(response => response.json())
       .then(res=> PreLoadLevel(res))
   
+  } else if (loadedLevels==10) {
+    levelPath = "level11.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  
   }
   
   
@@ -443,6 +461,9 @@ function Initialize() {
 }
 
 function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugText, coyoteTime) {
+  if (mainPlayer.levelCompleted && levelSubmit) {
+    window.prompt("Name","");
+  }
   if (canvasRefresh) {
     ClearStage(gameCanvas, gameCTX);
   }
@@ -695,8 +716,9 @@ function HandleCollision(mainPlayer) {
       mainPlayer.spawnX = mainPlayer.collisionRightObjects[i].x;
       mainPlayer.spawnY = mainPlayer.collisionRightObjects[i].y;
     } else if (mainPlayer.collisionRightObjects[i].type==4) {
-      mainPlayer.levelCompleted = true;
+      LevelCompleted(mainPlayer);
     } else if (mainPlayer.collisionRightObjects[i].type==5 && !collidedWithBounce) {
+      
       collidedWithBounce = true;
       mainPlayer.y+=3;
       if (mainPlayer.yVelocity<-300) {
@@ -721,7 +743,7 @@ function HandleCollision(mainPlayer) {
       mainPlayer.spawnX = mainPlayer.collisionLeftObjects[i].x;
       mainPlayer.spawnY = mainPlayer.collisionLeftObjects[i].y;
     } else if (mainPlayer.collisionLeftObjects[i].type==4) {
-      mainPlayer.levelCompleted = true;
+      LevelCompleted(mainPlayer);
     } else if (mainPlayer.collisionLeftObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
       mainPlayer.y+=3;
@@ -747,7 +769,7 @@ function HandleCollision(mainPlayer) {
       mainPlayer.spawnX = mainPlayer.collisionBottomObjects[i].x;
       mainPlayer.spawnY = mainPlayer.collisionBottomObjects[i].y;
     } else if (mainPlayer.collisionBottomObjects[i].type==4) {
-      mainPlayer.levelCompleted = true;
+      LevelCompleted(mainPlayer);
     } else if (mainPlayer.collisionBottomObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
       mainPlayer.y+=3;
@@ -772,7 +794,7 @@ function HandleCollision(mainPlayer) {
       mainPlayer.spawnX = mainPlayer.collisionTopObjects[i].x;
       mainPlayer.spawnY = mainPlayer.collisionTopObjects[i].y;
     } else if (mainPlayer.collisionTopObjects[i].type==4) {
-      mainPlayer.levelCompleted = true;
+      LevelCompleted(mainPlayer);
     } else if (mainPlayer.collisionTopObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
       mainPlayer.y+=3;
@@ -786,6 +808,18 @@ function HandleCollision(mainPlayer) {
   return mainPlayer
 }
 
+function LevelCompleted(mainPlayer) {
+  mainPlayer.levelCompleted = true;
+  
+  document.getElementById("timer").style.color="blue";
+    
+
+  
+    
+  
+  mainPlayer.levelJustCompleted=true;
+  return mainPlayer
+}
 function Gravity(mainPlayer,deltaTime, blocks) {
 
   let gravity = 700;
