@@ -18,6 +18,7 @@ let invisibleMode = false;
 let invisibleModeJustPressed = false;
 let levelSubmit = false;
 let currentLevelID=0;
+let timeSubmitted = false;
 document.addEventListener("keydown", function(event) {
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
@@ -475,8 +476,8 @@ function Initialize() {
 }
 
 function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugText, coyoteTime) {
-  if (mainPlayer.levelCompleted && levelSubmit) {
-    window.prompt("Name","");
+  if (/*mainPlayer.levelCompleted &&*/ levelSubmit) {
+    SubmitTime(mainPlayer);
   }
   if (canvasRefresh) {
     ClearStage(gameCanvas, gameCTX);
@@ -826,6 +827,7 @@ function LevelCompleted(mainPlayer) {
   mainPlayer.levelCompleted = true;
   
   document.getElementById("timer").style.color="blue";
+  
     
 
   
@@ -833,6 +835,15 @@ function LevelCompleted(mainPlayer) {
   
   mainPlayer.levelJustCompleted=true;
   return mainPlayer
+}
+
+function SubmitTime(mainPlayer) {
+  if (!timeSubmitted) {
+    timeSubmitted = true;
+    let name = prompt("Input name")
+    SendSpeedrunTime(name,currentLevelID,mainPlayer.timer*1000,2)
+  }
+  
 }
 function Gravity(mainPlayer,deltaTime, blocks) {
 
@@ -916,4 +927,26 @@ function Restart(mainPlayer) {
   mainPlayer = Death(mainPlayer);
   return mainPlayer
 }
+
+function SendSpeedrunTime(name,level,time,modifiers) {
+  
+
+  const form = document.createElement('form');
+  form.target ="_blank"
+  form.method = "post";
+  form.action = "http://leaderboard.draqonboy.com/uploadrun.php";
+  document.body.appendChild(form);
+
+  
+  const formField = document.createElement('input');
+  formField.type = 'hidden';
+  formField.name = "json";
+  formField.value ='{"name":"'+String(name)+'","level":'+String(level)+',"time":'+String(time)+',"modifiers":'+String(modifiers)+',"secret":"BCEq7@48*Vsi#wgw"}';
+  alert(formField.value)
+  formField.onclick="https://platformerv2.alexgardiner.repl.co"
+  form.appendChild(formField);
+  form.submit();
+  
+}
+
 window.onload = Main();
