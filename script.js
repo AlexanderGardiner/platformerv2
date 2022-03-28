@@ -22,7 +22,13 @@ let timeSubmitted = false;
 let levelStarted = false;
 let invisibleRun = false;
 let slowRun = false;
+
+
 document.addEventListener("keydown", function(event) {
+  document.getElementById("audioelement").volume = 0.0;
+  document.getElementById('audioelement').play();
+  document.getElementById("audioelement").volume = 0.0;
+  
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
   }
@@ -74,7 +80,6 @@ document.addEventListener("keydown", function(event) {
     window.open("https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwigtfK6yJb2AhWZIUQIHRp5AQ4QwqsBegQIBhAB&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ&usg=AOvVaw0aHtehaphMhOCAkCydRLZU",'blank')
   }
   if (event.keyCode==79) {
-    document.getElementById("timer").style.color="red";
     if (slowMotion) {
       slowMotion = false;
     } else {
@@ -179,11 +184,12 @@ document.addEventListener("keydown", function(event) {
   
     }
 
-    if (event.keyCode==186) {
-      levelSubmit = true;
+    
+  }
+  if (event.keyCode==186) {
+    levelSubmit = true;
     
   
-    }
   }
   
 });
@@ -448,7 +454,7 @@ function Main(){
 }
 
 function Initialize() {
-
+  
   
   let mainPlayer = new player(0,100,15,15,0,0,3,false);
   
@@ -481,14 +487,24 @@ function Initialize() {
   mainPlayer = Death(mainPlayer);
   DrawBlocks(blocks,gameCanvas,gameCTX);
   DrawPlayer(mainPlayer, gameCanvas, gameCTX);
-  
   window.requestAnimationFrame(function() {
     GameLoop(performance.now(), mainPlayer, gravity, gameCanvas, gameCTX, debugText, coyoteTime);
   });
 }
 
 function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugText, coyoteTime) {
-  if (/*mainPlayer.levelCompleted &&*/ levelSubmit) {
+  if (slowRun) {
+    document.getElementById("SlowRun").style.display = "inline";
+  } else{
+    document.getElementById("SlowRun").style.display = "none";
+  }
+
+  if (invisibleRun) {
+    document.getElementById("InvisRun").style.display = "inline";
+  } else {
+    document.getElementById("InvisRun").style.display = "none";
+  }
+  if (mainPlayer.levelCompleted && levelSubmit) {
     SubmitTime(mainPlayer);
   }
   if (canvasRefresh) {
@@ -609,7 +625,7 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     }
     
     
-    debugText[1].innerHTML = "Timer: " + mainPlayer.timer.toFixed(2)
+    debugText[1].innerHTML = "Timer: " + (Math.floor(mainPlayer.timer*1000)/1000).toFixed(2)
     debugText[12].innerHTML = "Deaths: " + mainPlayer.deaths
     if (debugOn) {
       debugText[2].innerHTML = "X: " + mainPlayer.x.toFixed(5) + " Y: " +mainPlayer.y.toFixed(5);
@@ -921,15 +937,14 @@ function Death(mainPlayer) {
   //alert("test")
   if (mainPlayer.spawnX == 20 && mainPlayer.spawnY == 40) {
     if (slowMotion) {
-      document.getElementById("timer").style.color="red";
       slowRun=true;
     } else {
-      document.getElementById("timer").style.color="black";
       slowRun=false;
     }
 
     
     mainPlayer.timer = 0;
+    timeSubmitted=false;
     levelStarted = false;
   } else {
     mainPlayer.deaths+=1;
@@ -946,6 +961,7 @@ function Death(mainPlayer) {
 }
 
 function Restart(mainPlayer) {
+  timeSubmitted=false;
   mainPlayer.deaths=0;
   
   document.getElementById("timer").style.color="black";
@@ -964,7 +980,7 @@ function SendSpeedrunTime(name,level,time,modifiers) {
   const submitform = document.createElement('form');
   submitform.target ="_blank"
   submitform.method = "post";
-  submitform.action = "http://leaderboard.draqonboy.com/uploadrun.php";
+  submitform.action = "https://leaderboard.draqonboy.com/uploadrun.php";
   document.body.appendChild(submitform);
 
   
@@ -972,7 +988,6 @@ function SendSpeedrunTime(name,level,time,modifiers) {
   formField.type = 'hidden';
   formField.name = "json";
   formField.value ='{"name":"'+String(name)+'","level":'+String(level)+',"time":'+String(time)+',"modifiers":'+String(modifiers)+',"secret":"BCEq7@48*Vsi#wgw"}';
-  alert(formField.value)
   formField.onclick="https://platformerv2.alexgardiner.repl.co"
   submitform.appendChild(formField);
 
