@@ -23,11 +23,12 @@ let levelStarted = false;
 let invisibleRun = false;
 let slowRun = false;
 
-
+let coyoteTime = 0.02;
 document.addEventListener("keydown", function(event) {
   document.getElementById("audioelement").volume = 0.0;
   document.getElementById('audioelement').play();
   document.getElementById("audioelement").volume = 0.0;
+
   
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
@@ -114,7 +115,7 @@ document.addEventListener("keydown", function(event) {
     }
     
   }
-  if (loadedLevels>10) {
+  if (loadedLevels>12) {
     if (event.keyCode==49) {
       
       currentLevelID = preLoadedLevels[0][0];
@@ -180,6 +181,16 @@ document.addEventListener("keydown", function(event) {
     } if (event.keyCode==189) {
       currentLevelID = preLoadedLevels[10][0];
       blocks = preLoadedLevels[10].slice(1,)
+      levelChanged = true
+  
+    } if (event.keyCode==187) {
+      currentLevelID = preLoadedLevels[11][0];
+      blocks = preLoadedLevels[11].slice(1,)
+      levelChanged = true
+  
+    } if (event.keyCode==8) {
+      currentLevelID = preLoadedLevels[12][0];
+      blocks = preLoadedLevels[12].slice(1,)
       levelChanged = true
   
     }
@@ -418,6 +429,18 @@ function PreLoadLevels() {
       .then(response => response.json())
       .then(res=> PreLoadLevel(res))
   
+  } else if (loadedLevels==11) {
+    levelPath = "level12.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  
+  } else if (loadedLevels==12) {
+    levelPath = "level13.json"
+    fetch(levelPath)
+      .then(response => response.json())
+      .then(res=> PreLoadLevel(res))
+  
   }
   
   
@@ -479,7 +502,7 @@ function Initialize() {
   debugText.push(document.getElementById("deaths"));
 
   //LoadLevel(level);
-  let coyoteTime = 0.02;
+  
   
   let gravity = 0.3;
 
@@ -764,6 +787,7 @@ function HandleCollision(mainPlayer) {
       
       collidedWithBounce = true;
       mainPlayer.y+=3;
+      coyoteTime=0
       if (mainPlayer.yVelocity<-300) {
         mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
@@ -790,6 +814,7 @@ function HandleCollision(mainPlayer) {
     } else if (mainPlayer.collisionLeftObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
       mainPlayer.y+=3;
+      coyoteTime=0
       if (mainPlayer.yVelocity<-300) {
         mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
@@ -816,10 +841,12 @@ function HandleCollision(mainPlayer) {
     } else if (mainPlayer.collisionBottomObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
       mainPlayer.y+=3;
+      coyoteTime=0
       if (mainPlayer.yVelocity<-300) {
         mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
         mainPlayer.yVelocity = 300;
+        
       }
     }
   }
@@ -841,6 +868,7 @@ function HandleCollision(mainPlayer) {
     } else if (mainPlayer.collisionTopObjects[i].type==5 && !collidedWithBounce) {
       collidedWithBounce = true;
       mainPlayer.y+=3;
+      coyoteTime=0
       if (mainPlayer.yVelocity<-300) {
         mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
@@ -915,7 +943,9 @@ function HandleInput(mainPlayer, deltaTime, blocks, coyoteTime) {
   if (!leftPressed && !rightPressed && !mainPlayer.dashing) {
     mainPlayer.xVelocity = 0;
   }
-
+  if (mainPlayer.jumping) {
+    coyoteTime=0;
+  }
   if (upPressed && coyoteTime>0 && !mainPlayer.jumping && mainPlayer.yVelocity<=0) {
     mainPlayer.jumping = true;
     mainPlayer.yVelocity = 290;
