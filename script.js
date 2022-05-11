@@ -22,14 +22,37 @@ let timeSubmitted = false;
 let levelStarted = false;
 let invisibleRun = false;
 let slowRun = false;
-
+let crazyMode = false;
+let flashing = false;
 let coyoteTime = 0.02;
+
 document.addEventListener("keydown", function(event) {
   document.getElementById("audioelement").volume = 0.0;
   document.getElementById('audioelement').play();
   document.getElementById("audioelement").volume = 0.0;
-
-  
+  if (event.keyCode == 220) {
+    if (flashing) {
+      flashing = false;
+    } else {
+      flashing = true;
+    }
+    
+  }
+  if (event.keyCode == 192) {
+    if (crazyMode) {
+      crazyMode = false;
+      canvasRefresh = true;
+      upPressed = false;
+      downPressed = false;
+      leftPressed = false;
+      rightPressed = false;
+      slowMotion = false;
+      dashPressed = false;
+      invisibleMode = false;
+    } else {
+      crazyMode = true;
+    }
+  }
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = true;
   }
@@ -516,6 +539,57 @@ function Initialize() {
 }
 
 function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugText, coyoteTime) {
+
+
+  if (crazyMode) {
+    if (Math.random()* (100 - 0 + 1) + 0<10) {
+      if (canvasRefresh) {
+        canvasRefresh = false;
+      } else {
+        canvasRefresh = true;
+      }
+    }
+    if (Math.random()* (100 - 0 + 1) + 0<10) {
+      upPressed = true;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<10) {
+      upPressed = false;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<10) {
+      downPressed = true;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<10) {
+      downPressed = false;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<10) {
+      leftPressed = true;
+    } 
+    if (Math.random()* (100 - 0 + 1) + 0<10) {
+      leftPressed = false;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<10) {
+      rightPressed = true;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<10) {
+      rightPressed = false;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<1) {
+      dashPressed = true;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<3) {
+      slowMotion = true;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<20) {
+      slowMotion = false;
+    }
+    if (Math.random()* (100 - 0 + 1) + 0<15 && flashing) {
+      invisibleMode = true;
+    }  
+    if (Math.random()* (100 - 0 + 1) + 0<15) {
+      invisibleMode = false;
+    }
+    
+  }
   if (slowRun) {
     document.getElementById("SlowRun").style.display = "inline";
   } else{
@@ -787,6 +861,7 @@ function HandleCollision(mainPlayer) {
       
       collidedWithBounce = true;
       mainPlayer.y+=3;
+      mainPlayer.jumping = true;
       coyoteTime=0
       if (mainPlayer.yVelocity<-300) {
         mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
@@ -815,6 +890,7 @@ function HandleCollision(mainPlayer) {
       collidedWithBounce = true;
       mainPlayer.y+=3;
       coyoteTime=0
+      mainPlayer.jumping = true;
       if (mainPlayer.yVelocity<-300) {
         mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
@@ -842,6 +918,7 @@ function HandleCollision(mainPlayer) {
       collidedWithBounce = true;
       mainPlayer.y+=3;
       coyoteTime=0
+      mainPlayer.jumping = true;
       if (mainPlayer.yVelocity<-300) {
         mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
@@ -869,6 +946,7 @@ function HandleCollision(mainPlayer) {
       collidedWithBounce = true;
       mainPlayer.y+=3;
       coyoteTime=0
+      mainPlayer.jumping = true;
       if (mainPlayer.yVelocity<-300) {
         mainPlayer.yVelocity = (mainPlayer.yVelocity*-1)-2;
       } else {
@@ -982,6 +1060,7 @@ function Death(mainPlayer) {
   mainPlayer.dashing = false;
   mainPlayer.dashCooldown = 0;
   mainPlayer.dashingTimer = 1000;
+  mainPlayer.dashingDirection = 1;
   mainPlayer.xVelocity = 0;
   mainPlayer.yVelocity = 0;
   mainPlayer.x = mainPlayer.spawnX;
@@ -1001,6 +1080,7 @@ function Restart(mainPlayer) {
   mainPlayer.spawnX = 20;
   mainPlayer.spawnY = 40;
   mainPlayer.levelCompleted = false;
+  mainPlayer.dashingDirection = 1;
   mainPlayer = Death(mainPlayer);
   return mainPlayer
 }
