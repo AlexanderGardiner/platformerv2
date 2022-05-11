@@ -6,6 +6,7 @@ let restartPressed = false;
 let deathPressed = false;
 let slowMotion = false;
 let dashPressed = false;
+let controlPressed = false;
 let paused = false;
 let debugOn = false;
 let blocks = [];
@@ -27,9 +28,13 @@ let flashing = false;
 let coyoteTime = 0.02;
 
 document.addEventListener("keydown", function(event) {
+  
   document.getElementById("audioelement").volume = 0.0;
   document.getElementById('audioelement').play();
   document.getElementById("audioelement").volume = 0.0;
+  if (event.keyCode==17 || event.keyCode == 91) {
+    controlPressed = true;
+  }
   if (event.keyCode == 220) {
     if (flashing) {
       flashing = false;
@@ -201,12 +206,12 @@ document.addEventListener("keydown", function(event) {
       blocks = preLoadedLevels[9].slice(1,)
       levelChanged = true
   
-    } if (event.keyCode==189) {
+    } if (event.keyCode==189 && !controlPressed) {
       currentLevelID = preLoadedLevels[10][0];
       blocks = preLoadedLevels[10].slice(1,)
       levelChanged = true
   
-    } if (event.keyCode==187) {
+    } if (event.keyCode==187 && !controlPressed) {
       currentLevelID = preLoadedLevels[11][0];
       blocks = preLoadedLevels[11].slice(1,)
       levelChanged = true
@@ -221,7 +226,7 @@ document.addEventListener("keydown", function(event) {
     
   }
   if (event.keyCode==186) {
-    levelSubmit = true;
+    //levelSubmit = true;
     
   
   }
@@ -229,6 +234,9 @@ document.addEventListener("keydown", function(event) {
 });
 
 document.addEventListener("keyup", function(event) {
+  if (event.keyCode==17 || event.keyCode == 91) {
+    controlPressed = false;
+  }
   if (event.keyCode == 87 || event.keyCode == 38) {
     upPressed = false;
   }
@@ -1085,27 +1093,6 @@ function Restart(mainPlayer) {
   return mainPlayer
 }
 
-function SendSpeedrunTime(name,level,time,modifiers) {
 
-  const submitform = document.createElement('form');
-  submitform.target ="_blank"
-  submitform.method = "post";
-  submitform.action = "https://leaderboard.draqonboy.com/uploadrun.php";
-  document.body.appendChild(submitform);
-
-  
-  const formField = document.createElement('input');
-  formField.type = 'hidden';
-  formField.name = "json";
-  formField.value ='{"name":"'+String(name)+'","level":'+String(level)+',"time":'+String(time)+',"modifiers":'+String(modifiers)+',"secret":"BCEq7@48*Vsi#wgw"}';
-  formField.onclick="https://platformerv2.alexgardiner.repl.co"
-  submitform.appendChild(formField);
-
-  submitform.submit();
-
-
-
-  
-}
 
 window.onload = Main();
