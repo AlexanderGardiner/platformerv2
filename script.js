@@ -581,13 +581,13 @@ function GameLoop(previousTime, mainPlayer, gravity, gameCanvas, gameCTX, debugT
     if (Math.random()* (100 - 0 + 1) + 0<10) {
       rightPressed = false;
     }  
-    if (Math.random()* (100 - 0 + 1) + 0<1) {
+    if (Math.random()* (100 - 0 + 1) + 0<0.5) {
       dashPressed = true;
     }  
-    if (Math.random()* (100 - 0 + 1) + 0<3) {
+    if (Math.random()* (100 - 0 + 1) + 0<1) {
       slowMotion = true;
     }  
-    if (Math.random()* (100 - 0 + 1) + 0<20) {
+    if (Math.random()* (100 - 0 + 1) + 0<5) {
       slowMotion = false;
     }
     if (Math.random()* (100 - 0 + 1) + 0<15 && flashing) {
