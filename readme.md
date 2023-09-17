@@ -47,4 +47,12 @@ Level 13: delete
 <p>`: Random inputs (Good luck)</p>
 <p>\: Flashing screen (Only works when random inputs are on)</p>
 <br>
+<h2>Features:</h2>
+<li>2D collision with rectangular hitboxes</li>
+<li>Dynamic level loading</li>
+<li>Coyote time</li>
+<li>Custom jump physics</li>
+<li>Dashing physics</li>
+<li>Jump pads</li>
+<br>
 <p>Music from bensound.com</p>
