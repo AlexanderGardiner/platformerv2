@@ -1,4 +1,4 @@
-# Platformer Game README
+# platformerv2 README
 
 ## Overview
 
